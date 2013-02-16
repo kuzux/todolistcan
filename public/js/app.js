@@ -8,7 +8,13 @@ function TodoCtrl($scope, $http){
     $scope.alerts = [];
 
     var addAlert = function(data){
-        $scope.alerts.push({class: error, text: data.reason});
+        if(_.isArray(data.reason)){
+            data.reason.forEach(function(err){
+                $scope.alerts.push({class: "error", text: err});
+            });
+        } else{
+            $scope.alerts.push({class: "error", text: data.reason});
+        }
     }
 
     $scope.dismissAlert = function(alert){
@@ -16,6 +22,7 @@ function TodoCtrl($scope, $http){
     }
 
     $scope.addNew = function(name){
+        if(name=="" || name==undefined) return;
         $http.post('/items', {text: name, done: false}).success(function(data){
             $scope.todos.push(data);
             $scope.newTodoName = "";

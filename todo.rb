@@ -8,8 +8,14 @@ require 'sequel'
 DB = Sequel.sqlite("todo.sqlite3")
 Sequel::Model.plugin :timestamps
 Sequel::Model.plugin :json_serializer
+Sequel::Model.plugin :validation_helpers
 
 class Item < Sequel::Model
+    def validate
+        super
+        validates_presence :text
+        validates_unique :text
+    end
 end
 
 class Todo < Sinatra::Base
@@ -55,13 +61,17 @@ class Todo < Sinatra::Base
     end
 
     post '/items/?' do
-        req = JSON.parse(request.body.read)
-        item = Item.new(req)
-        if item.save
-            json_status 201, ""
-            json item
-        else
-            json_status 500, "Failed to create Todo Item"
+        begin
+            req = JSON.parse(request.body.read)
+            item = Item.new(req)
+            if item.save
+                status 201
+                json item
+            else
+                json_status 500, "Failed to create Todo Item"
+            end
+        rescue Sequel::ValidationFailed
+            json_status 409, item.errors.full_messages
         end
     end
 
