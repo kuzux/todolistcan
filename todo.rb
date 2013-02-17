@@ -28,6 +28,9 @@ class Todo < Sinatra::Base
             status code
             json(:status => code, :reason => reason)
         end
+        def only_accept(hash, keys)
+            hash.select{|k,v| keys.include? k}
+        end
     end
 
     get '/' do
@@ -62,7 +65,7 @@ class Todo < Sinatra::Base
 
     post '/items/?' do
         begin
-            req = JSON.parse(request.body.read)
+            req = only_accept(JSON.parse(request.body.read), ["text", "done"])
             item = Item.new(req)
             if item.save
                 status 201
@@ -75,8 +78,8 @@ class Todo < Sinatra::Base
         end
     end
 
-    put '/items/:id/?' do
-        req = JSON.parse(request.body.read)
+    post '/items/:id/?' do
+        req = only_accept(JSON.parse(request.body.read), ["text", "done"])
         item = Item[params[:id].to_i]
         if item.nil?
             json_status 404, "Todo Item does not exist"

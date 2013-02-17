@@ -1,21 +1,26 @@
-var ToDo = angular.module("ToDo", []);
+var app = angular.module("ToDo", ['ngResource']);
 
-function TodoCtrl($scope, $http){
-    $http.get("/items").success(function(data){
-        $scope.todos = data;
-    }).error(addAlert);
+app.factory("Item", function($resource){
+    return $resource("/items/:id", {id:'@id'});
+});
+
+function TodoCtrl($scope, Item){
+
+    var addAlert = function(klass){
+        return function(data){
+            if(_.isArray(data.reason)){
+                data.reason.forEach(function(err){
+                    $scope.alerts.push({class: klass, text: err});
+                });
+            } else{
+                $scope.alerts.push({class: klass, text: data.reason});
+            }
+        }
+    }
 
     $scope.alerts = [];
 
-    var addAlert = function(data){
-        if(_.isArray(data.reason)){
-            data.reason.forEach(function(err){
-                $scope.alerts.push({class: "error", text: err});
-            });
-        } else{
-            $scope.alerts.push({class: "error", text: data.reason});
-        }
-    }
+    $scope.todos = Item.query(function(){}, addAlert("error"));
 
     $scope.searchItems = function(item){
         if(!$scope.searchQuery) return true;
@@ -29,10 +34,11 @@ function TodoCtrl($scope, $http){
 
     $scope.addNew = function(name){
         if(name=="" || name==undefined) return;
-        $http.post('/items', {text: name, done: false}).success(function(data){
-            $scope.todos.push(data);
+        var item = new Item({text: name, done: false});
+        item.$save(function(){
+            $scope.todos.push(item);
             $scope.newTodoName = "";
-        }).error(addAlert);
+        }, addAlert("error"));
     }
 
     $scope.numberOfTodos = function(){
@@ -40,12 +46,12 @@ function TodoCtrl($scope, $http){
     }
 
     $scope.removeItem = function(item){
-        $http.delete('/items/' + item.id).success(function(data){
+        item.$delete(function(){
             $scope.todos = _.without($scope.todos, item);
-        }).error(addAlert);
+        }, addAlert("error"));
     }
 
     $scope.updateDone = function(item){
-        $http.put('/items/' + item.id, {done: item.done});
+        item.$save(function(){}, addAlert("error"));
     }
 }
