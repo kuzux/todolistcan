@@ -23,11 +23,13 @@
                     </div>
 
                     <ul class="unstyled">
-                        <input type="text" ng-model="searchQuery.text" placeholder="Filter items" class="search-query" /> 
-                        <li ng-repeat="todo in todos | filter:searchQuery">
+                        <li><input type="text" ng-model="searchQuery.text" placeholder="Filter items" class="search-query" /> </li>
+                        
+                        <li><input type="checkbox" ng-model="searchQuery.findNew" />Don't show done items</li>
+                        <li ng-repeat="todo in todos | filter:searchItems">
                             <input type="checkbox" ng-model="todo.done" ng-click="updateDone(todo)"></input>
-                            <span class="done-{{todo.done}}"> {{todo.text}} </span>
                             <button ng-click="removeItem(todo)" class="btn btn-small"> <i class="icon-trash"> </i> </button>
+                            <span class="done-{{todo.done}}"> {{todo.text}} </span>
                         </li>
                     </ul>
                     <form class="form-horizontal">

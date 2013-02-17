@@ -17,6 +17,12 @@ function TodoCtrl($scope, $http){
         }
     }
 
+    $scope.searchItems = function(item){
+        if(!$scope.searchQuery) return true;
+        if($scope.searchQuery.findNew && item.done) return false;
+        return item.text.match($scope.searchQuery.text);
+    }
+
     $scope.dismissAlert = function(alert){
         $scope.alerts = _.without($scope.alerts, alert);
     }
