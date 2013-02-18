@@ -7,13 +7,13 @@ app.factory("Item", function($resource){
 function TodoCtrl($scope, Item){
 
     var addAlert = function(klass){
-        return function(data){
-            if(_.isArray(data.reason)){
-                data.reason.forEach(function(err){
+        return function(response){
+            if(_.isArray(response.data.reason)){
+                response.data.reason.forEach(function(err){
                     $scope.alerts.push({class: klass, text: err});
                 });
             } else{
-                $scope.alerts.push({class: klass, text: data.reason});
+                $scope.alerts.push({class: klass, text: response.data.reason});
             }
         }
     }
